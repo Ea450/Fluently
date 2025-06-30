@@ -20,7 +20,7 @@ const UserSection = () => {
                 </p>
             </div>
             <div className="border p-2 rounded-lg bg-gray-50 dark:bg-[#111827] text-sm">
-                <Link href='/create-Lesson'>+ Create Lesson</Link>
+                <Link href='/create-lesson'>+ Create Lesson</Link>
             </div>
         </div>
     )

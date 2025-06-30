@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation";
 import UserSection from "@/components/UserSection";
 
+
 const Dashboard = async () => {
     const userAuth = await auth();
     if (!userAuth.isAuthenticated) redirect('/sign-in');
@@ -12,7 +13,6 @@ const Dashboard = async () => {
             {/* Greeting */}
 
             <UserSection />
-
 
             {/* Streak and Progress */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

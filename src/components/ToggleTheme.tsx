@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react';
+import { FaMoon } from 'react-icons/fa';
+import { MdSunny } from 'react-icons/md';
 
 export default function ToggleTheme() {
     const [theme, setTheme] = useState('light');
@@ -35,9 +37,9 @@ export default function ToggleTheme() {
     return (
         <button
             onClick={toggleTheme}
-            className='p-2 rounded border dark:border-white border-black'
+            className="bg-black dark:bg-white text-white dark:text-black rounded-full font-medium text-sm sm:text-base h-7 sm:h-8 px-2 cursor-pointer"
         >
-            {theme === 'dark' ? '🌙 Dark' : '☀️ Light'}
+            {theme === 'dark' ? <MdSunny /> : <FaMoon />}
         </button>
     );
 }

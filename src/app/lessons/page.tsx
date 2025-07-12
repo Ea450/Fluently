@@ -1,6 +1,6 @@
 import LessonCard from "@/components/LessonCard"
 import UserSection from "@/components/UserSection"
-import { lessons } from "@/constant/data"
+import { lessons, topics } from "@/constant/data"
 
 const Lessons = () => {
     return (
@@ -17,6 +17,7 @@ const Lessons = () => {
                     ))}
                 </div>
             </section>
+
         </div>
     )
 }

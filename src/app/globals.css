@@ -120,3 +120,8 @@
     @apply bg-background text-foreground;
   }
 }
+@layer components {
+  .button {
+    @apply border dark:bg-blue-600 text-white px-4 py-2 rounded cursor-pointer bg-stone-900;
+  }
+}

@@ -1,6 +1,7 @@
 "use client";
+import FormOptions from "@/components/FormOptions";
 import HandleSpeaking from "@/components/HandleSpeaking";
-import Quiz from "@/components/Quiz";
+
 import TTSSpeaker from "@/components/TTSSpeaker";
 import UserSection from "@/components/UserSection";
 import React, { useState } from "react";
@@ -49,6 +50,18 @@ const Practice = () => {
       <div>
         {speaking && <HandleSpeaking setSpeaking={setSpeaking} />}
         {speech && <TTSSpeaker setSpeech={setSpeech} />}
+        {quiz && (
+          <div className="p-4 space-y-4 border mt-10 rounded-2xl text-center relative">
+            <h2 className="text-2xl">🧠 Quiz</h2>
+            <button
+              onClick={() => setQuiz(false)}
+              className="text-gray-500 hover:text-red-800 dark:hover:text-red-950 cursor-pointer absolute top-4 right-4"
+            >
+              Close ❌
+            </button>
+            <FormOptions />
+          </div>
+        )}
       </div>
     </section>
   );

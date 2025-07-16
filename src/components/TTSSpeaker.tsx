@@ -21,6 +21,7 @@ const TTSSpeaker = ({ setSpeech }: { setSpeech: (v: boolean) => void }) => {
 
   return (
     <div className="p-4 space-y-4 border mt-10 rounded-2xl text-center relative">
+      <h2>🔊 Listening</h2>
       <button
         onClick={() => setSpeech(false)}
         className="text-gray-500 hover:text-red-800 dark:hover:text-red-950 cursor-pointer absolute top-4 right-4"
@@ -35,10 +36,7 @@ const TTSSpeaker = ({ setSpeech }: { setSpeech: (v: boolean) => void }) => {
         placeholder="Enter text to speak..."
       />
       <div className="flex items-center justify-center gap-6">
-        <button
-          onClick={speak}
-          className="button"
-        >
+        <button onClick={speak} className="button">
           Generate Speech
         </button>
         <select

@@ -38,31 +38,21 @@ export const allowedLanguageCodes = [
   "vi",
   "th",
 ];
-export const levels = [
-  { id: "1", title: "easy" },
-  { id: "2", title: "meduim" },
-  { id: "3", title: "hard" },
-];
+
 export const languages = [
   { code: "en", label: "English" },
-  { code: "es", label: "Español" },
-  { code: "fr", label: "Français" },
-  { code: "de", label: "Deutsch" },
-  { code: "ar", label: "العربية" },
-  { code: "ru", label: "Русский" },
-  { code: "hi", label: "हिंदी" },
-  { code: "tr", label: "Türkçe" },
-  { code: "ja", label: "日本語" },
-  { code: "zh", label: "中文" },
-  { code: "pt", label: "Português" },
-  { code: "it", label: "Italiano" },
-  { code: "ko", label: "한국어" },
-  { code: "nl", label: "Nederlands" },
-  { code: "pl", label: "Polski" },
-  { code: "sv", label: "Svenska" },
-  { code: "fi", label: "Suomi" },
-  { code: "cs", label: "Čeština" },
-  { code: "he", label: "עברית" },
-  { code: "vi", label: "Tiếng Việt" },
-  { code: "fil", label: "Filipino" },
+  { code: "es", label: "Spanish" },
+  { code: "fr", label: "French" },
+  { code: "de", label: "German" },
+  { code: "ar", label: "Arabic" },
+  { code: "ru", label: "Russian" },
+  { code: "hi", label: "Hindi" },
+  { code: "tr", label: "Turkish" },
+  { code: "ja", label: "Japanese" },
+  { code: "zh", label: "Chinese" },
+  { code: "pt", label: "Portuguese" },
+  { code: "it", label: "Italian" },
+  { code: "ko", label: "Korean" },
 ];
+
+export const levels = ["amateur", "beginner", "advanced", "intermediate"];

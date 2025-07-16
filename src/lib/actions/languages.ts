@@ -2,6 +2,7 @@
 
 import { allowedLanguageCodes } from "@/constant/data";
 import { createSupabaseClient } from "../supabase";
+import { auth } from "@clerk/nextjs/server";
 
 export async function fetchAndSaveLanguages() {
   const supabase = createSupabaseClient();
@@ -106,15 +107,35 @@ export const getConversation = async (language_id: string, id: string) => {
   if (error) throw new Error(error.message);
   return data;
 };
-export const fetchQuizQuestions = async (language: string, level: string) => {
+export const getQuiz = async () => {
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
-    .from("quiz_questions")
+    .from("quizzes")
     .select("*")
-    .eq("language", language)
-    .eq("level", level)
-    .limit(5);
-
+    .order("created_at", { ascending: false })
+    .limit(10);
   if (error) throw new Error(error.message);
   return data;
+};
+export const createQuiz = async (FormData: CreateQuiz) => {
+  const { userId: author } = await auth();
+  const supabase = createSupabaseClient();
+  const quiz = await supabase
+    .from("quiz_questions")
+    .select("*")
+    .eq("language", FormData.language)
+    .eq("level", FormData.level)
+    .limit(10);
+  if (quiz.error) throw new Error(quiz.error.message);
+  quiz.data?.map(
+    async (data) =>
+      await supabase
+        .from("quizzes")
+        .insert({
+          author,
+          ...data,
+        })
+        .select()
+  );
+  return quiz.data;
 };

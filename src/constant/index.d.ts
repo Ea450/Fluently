@@ -11,7 +11,15 @@ interface Languages {
 }
 type Question = {
   id: string;
+  category: string;
   question: string;
+  question_en: string;
   choices: string[];
   correct_answer_index: number;
+  language: string;
+  level: string;
 };
+interface CreateQuiz {
+  language: string;
+  level: string;
+}

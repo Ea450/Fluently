@@ -3,7 +3,6 @@ import { lessons } from "@/constant/data";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import UserSection from "@/components/UserSection";
-import Link from "next/link";
 
 const Dashboard = async () => {
   const userAuth = await auth();
@@ -56,44 +55,6 @@ const Dashboard = async () => {
           {lessons.map((lesson) => (
             <LessonCard key={lesson.id} {...lesson} />
           ))}
-        </div>
-      </section>
-
-      {/* Practice Section */}
-      <section className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
-          🎯 Practice
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div className="bg-white dark:bg-[#1F2937] rounded-2xl shadow p-6 flex flex-col items-start">
-            <h3 className="text-xl font-semibold mb-2">🔊 Listening</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              You can write any word or phrase and get it as audio to improve
-              your listening skills.
-            </p>
-            <Link href="/practice" className="button">
-              Start Listening
-            </Link>
-          </div>
-          <div className="bg-white dark:bg-[#1F2937] rounded-2xl shadow p-6 flex flex-col items-start">
-            <h3 className="text-xl font-semibold mb-2">🗣️ Speaking</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              you can have a converstion with AI to improve your pronunciation
-              and speaking and listening.
-            </p>
-            <Link href="/practice" className="button">
-              Start Speaking
-            </Link>
-          </div>
-          <div className="bg-white dark:bg-[#1F2937] rounded-2xl shadow p-6 flex flex-col items-start">
-            <h3 className="text-xl font-semibold mb-2">🧠 Quiz</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Test your knowledge with quick quizzes.
-            </p>
-            <Link href="/practice" className="button">
-              Start Quiz
-            </Link>
-          </div>
         </div>
       </section>
     </main>

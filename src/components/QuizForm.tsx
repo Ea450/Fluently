@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const Quiz = ({ questions }: { questions: Question[] }) => {
+const QuizForm = ({ questions }: { questions: Question[] }) => {
   const [answers, setAnswers] = useState<number[]>([]);
   const [submitted, setSubmitted] = useState(false);
 
@@ -22,9 +22,9 @@ const Quiz = ({ questions }: { questions: Question[] }) => {
   }, 0);
 
   return (
-    <div className="space-y-4">
+    <div className="p-4 space-y-4 border mt-10 rounded-2xl text-center relative">
       {questions.map((q, i) => (
-        <div key={q.id}>
+        <div key={i}>
           <p className="font-semibold">
             {i + 1}. {q.question}
           </p>
@@ -57,4 +57,4 @@ const Quiz = ({ questions }: { questions: Question[] }) => {
     </div>
   );
 };
-export default Quiz;
+export default QuizForm;

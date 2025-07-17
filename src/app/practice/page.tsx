@@ -1,6 +1,6 @@
 "use client";
 import FormOptions from "@/components/FormOptions";
-import HandleSpeaking from "@/components/HandleSpeaking";
+import HandleSpeaking from "@/components/ChatAI";
 
 import TTSSpeaker from "@/components/TTSSpeaker";
 import UserSection from "@/components/UserSection";

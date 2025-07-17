@@ -1,25 +1,31 @@
-import { NextRequest, NextResponse } from 'next/server';
-import axios from 'axios';
+// pages/api/elevenlabs.ts
 
-const API_KEY = process.env.ELEVENLABS_API_KEY!;
+import type { NextApiRequest, NextApiResponse } from "next";
 
-export async function POST(req: NextRequest) {
-  const { message, session_id } = await req.json();
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== "POST") return res.status(405).end("Method Not Allowed");
+
+  const { message, history = [] } = req.body;
 
   try {
-    const response = await axios.post(
-      'https://elevenlabs.io/app/talk-to?agent_id=agent_01jzqknh0ke8gb10w3pcwjb6fz',
-      { message, session_id },
+    const response = await fetch(
+      `https://api.elevenlabs.io/v1/agents/${process.env.ELEVENLABS_AGENT_ID}/conversation`,
       {
+        method: "POST",
         headers: {
-          'xi-api-key': API_KEY,
-          'Content-Type': 'application/json',
+          "xi-api-key": process.env.ELEVENLABS_API_KEY!,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({ text: message, history }),
       }
     );
 
-    return NextResponse.json(response.data);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    const data = await response.json();
+    res.status(200).json(data);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 }

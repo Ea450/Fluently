@@ -1,31 +1,27 @@
-// pages/api/elevenlabs.ts
+import { NextResponse } from "next/server";
 
-import type { NextApiRequest, NextApiResponse } from "next";
-
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== "POST") return res.status(405).end("Method Not Allowed");
-
-  const { message, history = [] } = req.body;
-
+export async function GET() {
   try {
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/agents/${process.env.ELEVENLABS_AGENT_ID}/conversation`,
+      `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${process
+        .env.ELEVENLABS_AGENT_ID!}`,
       {
-        method: "POST",
         headers: {
           "xi-api-key": process.env.ELEVENLABS_API_KEY!,
-          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ text: message, history }),
       }
     );
 
+    if (!response.ok) {
+      throw new Error("Failed to get signed URL");
+    }
+
     const data = await response.json();
-    res.status(200).json(data);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return NextResponse.json({ signedUrl: data.signed_url });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to generate signed URL" },
+      { status: 500 }
+    );
   }
 }

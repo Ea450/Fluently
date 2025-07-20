@@ -23,3 +23,9 @@ interface CreateQuiz {
   language: string;
   level: string;
 }
+type Lesson = {
+  id: string;
+  language: string;
+  level: string;
+  topic: string;
+};

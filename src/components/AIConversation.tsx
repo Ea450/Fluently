@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const ChatAI = () => {
+const AIConversation = () => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<{ sender: string; text: string }[]>(
     []
@@ -68,4 +68,4 @@ const ChatAI = () => {
   );
 };
 
-export default ChatAI;
+export default AIConversation;

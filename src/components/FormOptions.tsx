@@ -24,7 +24,7 @@ import {
 } from "./ui/select";
 import { useState } from "react";
 import { redirect, usePathname } from "next/navigation";
-import { createQuiz } from "@/lib/actions/languages";
+import { CreateLesson, createQuiz } from "@/lib/actions/languages";
 
 const formSchema = z.object({
   language: z.string().min(1, { message: "Language is required" }),
@@ -49,14 +49,21 @@ const FormOptions = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-   if(pathname==='practice'){
-    const quiz = await createQuiz(values);
-    redirect("/practice/quiz");
-   }else{
-    if(pathname==='/createLesson'){
-      
+    if (pathname === "practice") {
+      const quiz = await createQuiz(values);
+      redirect("/practice/quiz");
+    } else {
+      if (pathname === "/createLesson") {
+        const lesson = await CreateLesson(
+          values.language,
+          values.level,
+          values.topic!
+        );
+        if (lesson) {
+          redirect(`lessons/${lesson.id}`);
+        }
+      }
     }
-   }
   };
   return (
     <Form {...form}>
@@ -186,8 +193,6 @@ const FormOptions = () => {
           {loading
             ? "Loading..."
             : pathname === "/createLesson"
-
-            
             ? "Create Lesson"
             : "Start Quiz"}
         </Button>

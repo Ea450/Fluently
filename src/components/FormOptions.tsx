@@ -49,8 +49,8 @@ const FormOptions = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (pathname === "practice") {
-      const quiz = await createQuiz(values);
+    if (pathname === "/practice") {
+      await createQuiz(values);
       redirect("/practice/quiz");
     } else {
       if (pathname === "/createLesson") {

@@ -4,7 +4,7 @@ import { lessons, topics } from "@/constant/data";
 
 const Lessons = () => {
   return (
-    <div className="p-6 sm:p-8 bg-gray-50 dark:bg-[#111827] min-h-screen">
+    <section>
       <UserSection />
       <section>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -20,7 +20,7 @@ const Lessons = () => {
           ))}
         </div>
       </section>
-    </div>
+    </section>
   );
 };
 

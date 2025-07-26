@@ -1,61 +1,122 @@
 "use client";
+import { useState, useEffect, useRef } from "react";
+import Vapi from "@vapi-ai/web";
 
-import { useConversation } from "@elevenlabs/react";
-import { useCallback } from "react";
+const AIConversation = ({
+  target_language,
+  user_level,
+  topic,
+}: AIConversationProps) => {
+  const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISATANT_ID!;
+  const apiKey = process.env.NEXT_PUBLIC_VAPI_API_KEY!;
 
-export default function AIConversation() {
-  const conversation = useConversation({
-    onConnect: () => console.log("Connected"),
-    onDisconnect: () => console.log("Disconnected"),
-    onMessage: (message) => console.log("Message:", message),
-    onError: (error) => console.error("Error:", error),
-  });
-  const getSignedUrl = async (): Promise<string> => {
-    const response = await fetch("/api/conversation");
-    if (!response.ok) {
-      throw new Error(`Failed to get signed url: ${response.statusText}`);
-    }
-    const { signedUrl } = await response.json();
-    return signedUrl;
-  };
-  const startConversation = useCallback(async () => {
-    try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-      const signedUrl = await getSignedUrl(); // Use it here
+  const [isConnected, setIsConnected] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [transcript, setTranscript] = useState<
+    Array<{ role: string; text: string }>
+  >([]);
+  const vapiRef = useRef<any>(null); // <-- useRef for Vapi instance
 
-      await conversation.startSession({
-        signedUrl,
+  useEffect(() => {
+    const vapi = new Vapi(apiKey);
+    vapiRef.current = vapi;
+
+    vapi.on("call-start", () => setIsConnected(true));
+    vapi.on("call-end", () => {
+      setIsConnected(false);
+      setIsSpeaking(false);
+    });
+    vapi.on("speech-start", () => setIsSpeaking(true));
+    vapi.on("speech-end", () => setIsSpeaking(false));
+    vapi.on("message", (message) => {
+      if (message.type === "transcript") {
+        setTranscript((prev) => [
+          ...prev,
+          { role: message.role, text: message.transcript },
+        ]);
+      }
+    });
+    vapi.on("error", (error) => {
+      console.error("Vapi error:", error);
+    });
+
+    return () => {
+      vapi.stop();
+    };
+  }, [apiKey]);
+
+  const startCall = () => {
+    if (vapiRef.current) {
+      vapiRef.current.start(assistantId, {
+        variableValues: { target_language, user_level, topic },
       });
-    } catch (error) {
-      console.error("Failed to start conversation:", error);
     }
-  }, [conversation]);
+  };
 
-  const stopConversation = useCallback(async () => {
-    await conversation.endSession();
-  }, [conversation]);
+  const endCall = () => {
+    if (vapiRef.current) {
+      vapiRef.current.stop();
+    }
+  };
 
   return (
-    <div>
-      <div>
+    <div className="fixed bottom-6 right-6 z-[1000] font-sans">
+      {!isConnected ? (
         <button
-          onClick={startConversation}
-          disabled={conversation.status === "connected"}
+          onClick={startCall}
+          className="bg-teal-600 text-white border-none rounded-full px-6 py-4 text-base font-bold cursor-pointer shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
         >
-          Start Conversation
+          🎤 Talk to Assistant
         </button>
-        <button
-          onClick={stopConversation}
-          disabled={conversation.status !== "connected"}
-        >
-          Stop Conversation
-        </button>
-      </div>
+      ) : (
+        <div className="bg-white border border-gray-200 rounded-xl p-5 w-80 shadow-xl">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-3 h-3 rounded-full ${
+                  isSpeaking ? "bg-red-500 animate-pulse" : "bg-teal-600"
+                }`}
+              ></div>
+              <span className="font-semibold text-gray-800">
+                {isSpeaking ? "Assistant Speaking..." : "Listening..."}
+              </span>
+            </div>
+            <button
+              onClick={endCall}
+              className="bg-red-500 text-white text-xs px-3 py-1 rounded-md hover:bg-red-600 transition cursor-pointer"
+            >
+              End Call
+            </button>
+          </div>
 
-      <div>
-        <p>Status: {conversation.status}</p>
-        <p>Agent is {conversation.isSpeaking ? "speaking" : "listening"}</p>
-      </div>
+          <div className="max-h-52 overflow-y-auto mb-3 p-2 bg-gray-100 rounded-md space-y-2">
+            {transcript.length === 0 ? (
+              <p className="text-sm text-gray-500 m-0">
+                Conversation will appear here...
+              </p>
+            ) : (
+              transcript.map((msg, i) => (
+                <div
+                  key={i}
+                  className={`flex ${
+                    msg.role === "user" ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  <span
+                    className={`text-white px-3 py-2 rounded-xl text-sm max-w-[80%] ${
+                      msg.role === "user" ? "bg-teal-600" : "bg-gray-800"
+                    }`}
+                  >
+                    {msg.text}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default AIConversation;

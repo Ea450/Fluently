@@ -8,7 +8,7 @@ const Dashboard = async () => {
   const userAuth = await auth();
   if (!userAuth.isAuthenticated) redirect("/sign-in");
   return (
-    <main className="p-6 sm:p-8 bg-gray-50 dark:bg-[#111827] min-h-screen">
+    <section>
       {/* Greeting */}
 
       <UserSection />
@@ -57,7 +57,7 @@ const Dashboard = async () => {
           ))}
         </div>
       </section>
-    </main>
+    </section>
   );
 };
 

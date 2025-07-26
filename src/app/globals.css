@@ -119,9 +119,22 @@
   body {
     @apply bg-background text-foreground;
   }
+  section {
+    @apply p-6 sm:p-8 bg-gray-50 dark:bg-[#111827] min-h-screen;
+  }
 }
 @layer components {
   .button {
     @apply border dark:bg-blue-600 text-white px-4 py-2 rounded cursor-pointer bg-stone-900;
+  }
+  .practice-section {
+    @apply bg-white dark:bg-[#1F2937] rounded-2xl shadow p-6 flex flex-col items-start;
+
+    h3 {
+      @apply text-xl font-semibold mb-2;
+    }
+    p {
+      @apply text-gray-600 dark:text-gray-400 mb-4;
+    }
   }
 }

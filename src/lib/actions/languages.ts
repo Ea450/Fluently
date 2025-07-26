@@ -161,16 +161,3 @@ Feedback
 - At the end of each session, give a detailed feedback report to let the user know their strengths and weaknesses.
 - Deliver this feedback as a written transcript, in short lines, clearly identifying pronunciation, vocabulary, or grammar issues — and what they did well.`;
 };
-
-export async function speakReply(text: string) {
-  const res = await fetch("/api/tts", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
-  });
-
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-  audio.play();
-}

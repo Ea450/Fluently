@@ -29,3 +29,11 @@ type Lesson = {
   level: string;
   topic: string;
 };
+interface AIConversationProps {
+  target_language: string;
+  user_level: string;
+  topic: string;
+}
+interface QuizProps {
+  setQuiz: (value: boolean) => void;
+}

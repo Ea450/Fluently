@@ -55,4 +55,20 @@ export const languages = [
   { code: "ko", label: "Korean" },
 ];
 
+export const LangMap: Record<string, string> = {
+  en: "en-US",
+  es: "es-ES",
+  fr: "fr-FR",
+  de: "de-DE",
+  ar: "ar-EG",
+  ru: "ru-RU",
+  hi: "hi-IN",
+  tr: "tr-TR",
+  ja: "ja-JP",
+  zh: "zh-CN",
+  pt: "pt-PT",
+  it: "it-IT",
+  ko: "ko-KR",
+};
+
 export const levels = ["amateur", "beginner", "advanced", "intermediate"];

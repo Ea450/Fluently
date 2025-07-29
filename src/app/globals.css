@@ -120,7 +120,7 @@
     @apply bg-background text-foreground;
   }
   section {
-    @apply p-6 sm:p-8 bg-gray-50 dark:bg-[#111827] min-h-screen;
+    @apply p-6 sm:p-8 bg-gray-50 dark:bg-[#111827];
   }
 }
 @layer components {
@@ -136,5 +136,38 @@
     p {
       @apply text-gray-600 dark:text-gray-400 mb-4;
     }
+  }
+  .user-section {
+    @apply flex flex-col gap-4 w-1/3 max-sm:w-full max-sm:flex-row;
+  }
+  .user-avatar {
+    @apply border-2 border-black flex flex-col gap-4 items-center rounded-lg py-8 max-sm:hidden;
+  }
+  .btn-mic {
+    @apply border-2 border-black rounded-lg flex flex-col gap-2 items-center py-8 max-sm:py-2 cursor-pointer w-full;
+  }
+  .companion-section {
+    @apply border-2 border-orange-500 w-2/3 max-sm:w-full flex flex-col gap-4  rounded-lg;
+  }
+
+  .companion-avatar {
+    @apply size-[300px] flex items-center justify-center rounded-lg max-sm:size-[100px] mt-4;
+  }
+  .companion-lottie {
+    @apply size-[300px] max-sm:size-[100px];
+  }
+
+  .transcript {
+    @apply relative flex flex-col gap-4 w-full items-center pt-10 flex-grow overflow-hidden border-2 border-black
+    h-2;
+  }
+  .transcript-message {
+    @apply overflow-y-auto w-full flex flex-col gap-4 max-sm:gap-2 pr-2 h-full text-2xl;
+  }
+  .transcript-fade {
+    @apply pointer-events-none absolute bottom-0 left-0 right-0 h-40 max-sm:h-20 bg-gradient-to-t from-background via-background/90 to-transparent z-10;
+  }
+  .subject-badge {
+    @apply bg-black text-white rounded-4xl text-sm px-2 py-1 capitalize;
   }
 }

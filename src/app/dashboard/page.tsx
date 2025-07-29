@@ -1,14 +1,16 @@
 import LessonCard from "@/components/LessonCard";
-import { lessons } from "@/constant/data";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import UserSection from "@/components/UserSection";
+import { getUserLessons } from "@/lib/actions/languages";
 
 const Dashboard = async () => {
-  const userAuth = await auth();
-  if (!userAuth.isAuthenticated) redirect("/sign-in");
+  const user = await auth();
+  if (!user) redirect("/sign-in");
+
+  const lessons = await getUserLessons(user.userId!);
   return (
-    <section>
+    <section className="h-[90vh]">
       {/* Greeting */}
 
       <UserSection />

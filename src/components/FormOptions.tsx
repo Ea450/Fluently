@@ -30,7 +30,7 @@ const formSchema = z.object({
   language: z.string().min(1, { message: "Language is required" }),
   topic: z.string().optional(),
   level: z.string().min(1, { message: "Level is required" }),
-  duration: z.number().optional(),
+  duration: z.string().optional(),
 });
 
 const FormOptions = () => {
@@ -44,7 +44,7 @@ const FormOptions = () => {
       language: "",
       topic: "",
       level: "",
-      duration: 5,
+      duration: "",
     },
   });
 
@@ -57,7 +57,8 @@ const FormOptions = () => {
         const lesson = await CreateLesson(
           values.language,
           values.level,
-          values.topic!
+          values.topic!,
+          +values.duration!
         );
         if (lesson) {
           redirect(`lessons/${lesson.id}`);
@@ -178,7 +179,7 @@ const FormOptions = () => {
                 <FormLabel>Estimated session duration in minutes</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="15"
+                    placeholder="0"
                     {...field}
                     className="input"
                     type="number"

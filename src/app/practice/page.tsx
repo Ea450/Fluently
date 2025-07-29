@@ -19,7 +19,7 @@ const Practice = () => {
     setQuiz(false);
   };
   return (
-    <section>
+    <section className="h-[90vh]">
       <UserSection />
       <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
         🎯 Practice

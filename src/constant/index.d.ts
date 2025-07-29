@@ -28,12 +28,27 @@ type Lesson = {
   language: string;
   level: string;
   topic: string;
+  duration: number;
 };
 interface AIConversationProps {
   target_language: string;
   user_level: string;
   topic: string;
+  userName: string;
+  userImage: string;
+  lessonId: string;
 }
 interface QuizProps {
   setQuiz: (value: boolean) => void;
+}
+
+interface SavedMessage {
+  role: "user" | "system" | "assistant";
+  content: string;
+}
+interface LessonCardProps {
+  id: string;
+  level: string;
+  language: string;
+  rate: number;
 }

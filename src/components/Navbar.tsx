@@ -18,6 +18,7 @@ const Navbar = () => {
                     <li><Link href="/" className="hover:text-cyan-600 dark:hover:text-gray-400">Dashboard</Link></li>
                     <li><Link href="/lessons" className="hover:text-cyan-600 dark:hover:text-gray-400">Lessons</Link></li>
                     <li><Link href="/practice" className="hover:text-cyan-600 dark:hover:text-gray-400">Practice</Link></li>
+                    <li><Link href="/feedback" className="hover:text-cyan-600 dark:hover:text-gray-400">Feedback</Link></li>
                 </ul>
             )}
             <div className="flex items-center gap-2">

@@ -166,3 +166,60 @@ export const saveRateAndFeedback = async (
   }
   console.log("supabse updated", data);
 };
+
+// Get all feedback for a user
+export const getUserFeedback = async (userId: string) => {
+  const supabase = createSupabaseClient();
+  
+  const { data, error } = await supabase
+    .from("lessons")
+    .select("id, language, level, topic, rate, feedback, created_at")
+    .eq("user_id", userId)
+    .not("feedback", "is", null)
+    .not("rate", "is", null)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+// Get feedback analytics for a user
+export const getUserFeedbackAnalytics = async (userId: string) => {
+  const supabase = createSupabaseClient();
+  
+  const { data, error } = await supabase
+    .from("lessons")
+    .select("rate, language, level")
+    .eq("user_id", userId)
+    .not("rate", "is", null);
+
+  if (error) throw new Error(error.message);
+  
+  // Calculate analytics
+  const totalLessons = data.length;
+  const averageRating = totalLessons > 0 
+    ? data.reduce((sum, lesson) => sum + lesson.rate, 0) / totalLessons 
+    : 0;
+  
+  // Group by language
+  const byLanguage = data.reduce((acc, lesson) => {
+    if (!acc[lesson.language]) {
+      acc[lesson.language] = { count: 0, totalRating: 0 };
+    }
+    acc[lesson.language].count++;
+    acc[lesson.language].totalRating += lesson.rate;
+    return acc;
+  }, {} as Record<string, { count: number; totalRating: number }>);
+
+  const languageStats = Object.entries(byLanguage).map(([language, stats]) => ({
+    language,
+    count: stats.count,
+    averageRating: stats.totalRating / stats.count
+  }));
+
+  return {
+    totalLessons,
+    averageRating,
+    languageStats
+  };
+};

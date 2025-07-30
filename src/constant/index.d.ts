@@ -59,3 +59,23 @@ interface QuizCardProps {
   language: string;
   score: number;
 }
+
+interface FeedbackItem {
+  id: string;
+  language: string;
+  level: string;
+  topic: string;
+  rate: number;
+  feedback: string;
+  created_at: string;
+}
+
+interface FeedbackAnalytics {
+  totalLessons: number;
+  averageRating: number;
+  languageStats: {
+    language: string;
+    count: number;
+    averageRating: number;
+  }[];
+}

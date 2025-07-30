@@ -50,8 +50,8 @@ const FormOptions = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (pathname === "/practice") {
-      await createQuiz(values);
-      redirect("/practice/quiz");
+      const quizId = await createQuiz(values);
+      redirect(`/practice/quiz/${quizId}`);
     } else {
       if (pathname === "/createLesson") {
         const lesson = await CreateLesson(
@@ -183,6 +183,8 @@ const FormOptions = () => {
                     {...field}
                     className="input"
                     type="number"
+                    max={10}
+                    min={1}
                   />
                 </FormControl>
                 <FormMessage />

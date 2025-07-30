@@ -7,14 +7,28 @@ export const lessons = [
 ];
 
 export const topics = [
-  { id: "1", title: "Greetings" },
-  { id: "2", title: "Food & Drinks" },
-  { id: "3", title: "Travel" },
-  { id: "4", title: "Family & Friends" },
-  { id: "5", title: "Shopping" },
-  { id: "6", title: "Work & Business" },
-  { id: "7", title: "Daily Conversation" },
-  { id: "8", title: "Numbers & Dates" },
+  { id: 16, title: "Greetings" },
+  { id: 17, title: "Food & Drinks" },
+  { id: 18, title: "Travel" },
+  { id: 19, title: "Family & Friends" },
+  { id: 20, title: "Shopping" },
+  { id: 2, title: "Work & Business" },
+  { id: 21, title: "Daily Conversation" },
+  { id: 22, title: "Numbers & Dates" },
+  { id: 1, title: "Introducing Yourself" },
+  { id: 3, title: "Talking About Your Hobbies" },
+  { id: 4, title: "Making Travel Plans" },
+  { id: 5, title: "Going Shopping" },
+  { id: 6, title: "Daily Routine and Schedule" },
+  { id: 7, title: "Describing Your Family" },
+  { id: 8, title: "At the Doctor’s Office" },
+  { id: 9, title: "Talking About Weather and Seasons" },
+  { id: 10, title: "Job Interviews and Career Goals" },
+  { id: 11, title: "Describing Places in Your City" },
+  { id: 12, title: "Talking About Movies and Music" },
+  { id: 13, title: "Making Small Talk with Strangers" },
+  { id: 14, title: "Booking a Hotel Room" },
+  { id: 15, title: "Expressing Opinions and Preferences" },
 ];
 
 export const allowedLanguageCodes = [

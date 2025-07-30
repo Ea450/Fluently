@@ -19,7 +19,7 @@ const Practice = () => {
     setQuiz(false);
   };
   return (
-    <section className="h-[90vh]">
+    <main className="h-[90vh]">
       <UserSection />
       <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
         🎯 Practice
@@ -57,7 +57,7 @@ const Practice = () => {
         {speech && <TTSSpeaker setSpeech={setSpeech} />}
         {quiz && <Quiz setQuiz={setQuiz} />}
       </div>
-    </section>
+    </main>
   );
 };
 

@@ -37,6 +37,7 @@ interface AIConversationProps {
   userName: string;
   userImage: string;
   lessonId: string;
+  duration: number;
 }
 interface QuizProps {
   setQuiz: (value: boolean) => void;
@@ -51,4 +52,10 @@ interface LessonCardProps {
   level: string;
   language: string;
   rate: number;
+}
+interface QuizCardProps {
+  id: string;
+  level: string;
+  language: string;
+  score: number;
 }

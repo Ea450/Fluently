@@ -2,31 +2,31 @@
 import { useState } from "react";
 import { languages } from "@/constant/data";
 
-const VOICERSS_API_KEY = process.env.NEXT_PUBLIC_VOICERSS_API_KEY!;
-
 const TTSSpeaker = ({ setSpeech }: { setSpeech: (v: boolean) => void }) => {
   const [text, setText] = useState("");
   const [language, setLanguage] = useState("en");
 
-  const speakWithVoiceRSS = async (text: string, langCode: string) => {
-    try {
-      const url = `https://api.voicerss.org/?key=${VOICERSS_API_KEY}&hl=${langCode}&src=${encodeURIComponent(
-        text
-      )}&c=MP3&f=44khz_16bit_stereo`;
+  const speak = (text: string, langCode: string) => {
+    if (!window.speechSynthesis) {
+      alert("Speech synthesis is not supported in this browser.");
+      return;
+    }
 
-      const response = await fetch(url);
-      const audioBlob = await response.blob();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = langCode;
 
-      if (audioBlob.type !== "audio/mpeg") {
-        throw new Error("Invalid audio format returned");
-      }
+    const voices = speechSynthesis.getVoices();
+    const matchedVoice = voices.find((voice) =>
+      voice.lang.startsWith(langCode)
+    );
 
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      audio.play();
-    } catch (error) {
-      console.error("TTS Error:", error);
-      alert("Text-to-speech failed. Please check the language or API key.");
+    if (matchedVoice) {
+      utterance.voice = matchedVoice;
+      speechSynthesis.speak(utterance);
+    } else {
+      alert(
+        `No voice found for "${langCode}". Please install an Arabic voice or try a different language.`
+      );
     }
   };
 
@@ -49,10 +49,7 @@ const TTSSpeaker = ({ setSpeech }: { setSpeech: (v: boolean) => void }) => {
       />
 
       <div className="flex items-center justify-center gap-6">
-        <button
-          onClick={() => speakWithVoiceRSS(text, language)}
-          className="button"
-        >
+        <button onClick={() => speak(text, language)} className="button">
           🔈 Speak
         </button>
         <select

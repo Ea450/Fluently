@@ -1,11 +1,16 @@
 "use client";
+
 import { saveRateAndFeedback } from "@/lib/actions/languages";
 import { vapi } from "@/lib/actions/vapi.sdk";
-import { cn, configureAssistant, extractFeedback } from "@/lib/utils";
+import {
+  cn,
+  configureAssistant,
+  extractFeedback,
+  formatTime,
+} from "@/lib/utils";
 import Image from "next/image";
-import Lottie, { LottieRefCurrentProps } from "lottie-react";
 import { useState, useEffect, useRef } from "react";
-import soundwaves from "@/constant/soundwaves.json";
+
 enum CallStatus {
   INACTIVE = "INACTIVE",
   CONNECTING = "CONNECTING",
@@ -17,6 +22,7 @@ const AIConversation = ({
   target_language,
   user_level,
   topic,
+  duration,
   userName,
   userImage,
   lessonId,
@@ -25,21 +31,40 @@ const AIConversation = ({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [messages, setMessages] = useState<SavedMessage[]>([]);
-  const lottieRef = useRef<LottieRefCurrentProps>(null);
+  const [remainingTime, setRemainingTime] = useState(duration * 60);
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  //handle toggle user microphone
-  const toggleMicrophone = () => {
-    const isMuted = vapi.isMuted();
-    vapi.setMuted(!isMuted);
-    setIsMuted(!isMuted);
+  const startCountdown = () => {
+    if (countdownIntervalRef.current)
+      clearInterval(countdownIntervalRef.current);
+    countdownIntervalRef.current = setInterval(() => {
+      setRemainingTime((prev) => {
+        if (prev <= 1) {
+          handleDisconnect();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
   };
 
-  // handle start call and reseve messages
+  const stopCountdown = () => {
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+  };
+
+  const toggleMicrophone = () => {
+    const isCurrentlyMuted = vapi.isMuted();
+    vapi.setMuted(!isCurrentlyMuted);
+    setIsMuted(!isCurrentlyMuted);
+  };
+
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
-
     const assistantOverrides = {
-      variableValues: { target_language, topic, user_level },
+      variableValues: { target_language, topic, user_level, duration },
       clientMessages: ["transcript"],
       serverMessages: [],
     };
@@ -47,44 +72,45 @@ const AIConversation = ({
     vapi.start(configureAssistant(), assistantOverrides);
   };
 
-  // handle finishing call and save feedback and rating
   const handleDisconnect = async () => {
     setCallStatus(CallStatus.FINISHED);
-    const lastMessage = messages[messages.length - 1];
-    const result = extractFeedback(lastMessage.content);
-    if (result?.rating && result?.feedback) {
-      await saveRateAndFeedback(lessonId, result.rating, result.feedback);
-    }
     vapi.stop();
+    stopCountdown();
+
+    const lastAssistantMessage = [...messages]
+      .reverse()
+      .find((msg) => msg.role === "assistant");
+    if (!lastAssistantMessage) return;
+
+    const result = extractFeedback(lastAssistantMessage.content);
+    if (result?.rating && result?.feedback) {
+      try {
+        await saveRateAndFeedback(lessonId, result.rating, result.feedback);
+        console.log("✅ Feedback saved to Supabase");
+      } catch (err) {
+        console.error("❌ Failed to save feedback:", err);
+      }
+    } else {
+      console.warn("⚠️ No valid feedback found.");
+    }
   };
 
-  // lottie animation for sound waves
   useEffect(() => {
-    if (lottieRef) {
-      if (isSpeaking) {
-        lottieRef.current?.play();
-      } else {
-        lottieRef.current?.stop();
-      }
-    }
-  }, [isSpeaking, lottieRef]);
+    const onCallStart = () => {
+      setCallStatus(CallStatus.ACTIVE);
+      setRemainingTime(duration * 60);
+      startCountdown();
+    };
 
-  // handle vapi events
-  useEffect(() => {
-    const onCallStart = () => setCallStatus(CallStatus.ACTIVE);
+    const onCallEnd = () => {
+      setCallStatus(CallStatus.FINISHED);
+      stopCountdown();
+    };
 
     const onMessage = (message: Message) => {
       if (message.type === "transcript" && message.transcriptType === "final") {
         const newMessage = { role: message.role, content: message.transcript };
         setMessages((prev) => [newMessage, ...prev]);
-      }
-    };
-    const onCallEnd = async () => {
-      setCallStatus(CallStatus.FINISHED);
-      const lastMessage = messages[messages.length - 1];
-      const result = extractFeedback(lastMessage.content);
-      if (result?.rating && result?.feedback) {
-        await saveRateAndFeedback(lessonId, result.rating, result.feedback);
       }
     };
 
@@ -94,48 +120,63 @@ const AIConversation = ({
 
     vapi.on("call-start", onCallStart);
     vapi.on("call-end", onCallEnd);
-    vapi.on("error", onError);
     vapi.on("message", onMessage);
+    vapi.on("error", onError);
     vapi.on("speech-start", onSpeechStart);
     vapi.on("speech-end", onSpeechEnd);
 
     return () => {
       vapi.off("call-start", onCallStart);
       vapi.off("call-end", onCallEnd);
-      vapi.off("error", onError);
       vapi.off("message", onMessage);
+      vapi.off("error", onError);
       vapi.off("speech-start", onSpeechStart);
       vapi.off("speech-end", onSpeechEnd);
+      stopCountdown();
     };
   }, [lessonId]);
 
   return (
-    <section className="flex flex-col h-[90vh]">
-      <section className="flex gap-8 max-sm:flex-col ">
-        <section
-          className="relative flex flex-col gap-4 w-full items-center pt-10 overflow-hidden border-2 border-black
-    h-5"
-        >
-          <div className="transcript-message no-scrollbar">
+    <main className="flex flex-col h-[90vh]">
+      <section className="flex gap-8 max-sm:flex-col">
+        <section className="relative w-full max-w-2xl mx-auto pt-10 px-4 pb-10 overflow-hidden rounded-lg border-2 border-black">
+          <div
+            className="overflow-y-auto max-h-[40vh] no-scrollbar space-y-4 px-2"
+            style={{ scrollbarWidth: "none" }}
+          >
             {messages.map((message, index) => {
-              if (message.role === "assistant") {
-                return (
-                  <p key={index} className="max-sm:text-sm">
-                    MR : {message.content}
-                  </p>
-                );
-              } else {
-                return (
-                  <p key={index} className="text-primary max-sm:text-sm">
-                    {userName}: {message.content}
-                  </p>
-                );
-              }
+              const isUser = message.role === "user";
+              return (
+                <div
+                  key={index}
+                  className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`rounded-2xl px-4 py-2 text-sm sm:text-base max-w-[80%] whitespace-pre-wrap 
+                      ${
+                        isUser
+                          ? "bg-gray-500 text-white rounded-br-none"
+                          : "bg-gray-200 dark:bg-gray-700 text-black dark:text-white rounded-bl-none"
+                      }
+                    `}
+                  >
+                    <span className="font-semibold">
+                      {isUser ? userName : "MR"}
+                    </span>
+                    : {message.content}
+                  </div>
+                </div>
+              );
             })}
           </div>
-          <div className="transcript-fade" />
+          {callStatus === CallStatus.ACTIVE && (
+            <div className="text-xl font-mono text-green-600 absolute bottom-2 right-2">
+              ⏳ Remaining Time: {formatTime(remainingTime)}
+            </div>
+          )}
         </section>
-        <div className="user-section ">
+
+        <div className="user-section">
           <div className="user-avatar">
             <Image
               src={userImage}
@@ -146,6 +187,7 @@ const AIConversation = ({
             />
             <p className="font-bold text-2xl">{userName}</p>
           </div>
+
           <button
             className="btn-mic"
             onClick={toggleMicrophone}
@@ -161,6 +203,7 @@ const AIConversation = ({
               {isMuted ? "Turn on microphone" : "Turn off microphone"}
             </p>
           </button>
+
           <button
             className={cn(
               "rounded-lg py-2 cursor-pointer transition-colors w-full text-white dark:bg-blue-600",
@@ -181,7 +224,7 @@ const AIConversation = ({
           </button>
         </div>
       </section>
-    </section>
+    </main>
   );
 };
 

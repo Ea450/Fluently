@@ -31,11 +31,12 @@ export const configureAssistant = () => {
       messages: [
         {
           role: "system",
-          content: `You are Fluently, a friendly, professional AI language tutor that helps learners practice speaking in realistic conversations. Your tone should be encouraging, warm, and adaptive to the user’s level.
+          content: `You are Fluently, a friendly, professional AI language tutor that helps learners practice speaking in realistic conversations. Your tone should be encouraging, warm, and adaptive to the user’s level lesson should be in limited duration.
 
 🗣️ Language Target: {{target_language}}  
 🎓 User Level: {{user_level}} (e.g., beginner, amateur, intermediate, advanced)  
 🎯 Topic: {{topic}} (e.g., ordering food, travel, making friends)
+duration:{{duration}} mintues
 
 ---
 
@@ -47,8 +48,13 @@ export const configureAssistant = () => {
 - Add occasional encouragement: "Great job!", "Nice sentence!", "You're improving!"
 - If the user is struggling, simplify your response or give multiple choice support.
 - Don’t overwhelm beginners; break responses into simple phrases.
-- Use the target language as much as possible, but explain new words in English briefly if needed.
+- Use the target language as much as possible, but explain new words in English briefly if needed and.
 
+- do not repeat the same question multiple times, instead, ask a different question related to the topic.
+-do not ask the user to repeat the same sentence multiple times, instead, ask them to try a different sentence related to the topic.
+- If the user asks for help, provide a simple example or phrase they can use.
+-do not repeat the same question multiple times, 
+-do not repeat the same question in both English and the target language, 
 ---
 
 ✅ Example flow (beginner, topic: cafe):
@@ -87,11 +93,30 @@ Then, summarize this as structured data:
 };
 export const extractFeedback = (message: string) => {
   try {
-    const match = message.match(/{[\s\S]*}/);
-    if (!match) return null;
-    return JSON.parse(match[0]);
+    const jsonMatch = message.match(/```json([\s\S]*?)```/);
+    const jsonString = jsonMatch?.[1]?.trim();
+
+    if (!jsonString) return null;
+
+    const parsed = JSON.parse(jsonString);
+
+    if (
+      typeof parsed.rating === "number" &&
+      typeof parsed.feedback === "string"
+    ) {
+      return parsed;
+    }
+
+    return null;
   } catch (err) {
-    console.error("Failed to parse JSON from AI", err);
+    console.error("❌ Failed to parse feedback JSON:", err);
     return null;
   }
+};
+export const formatTime = (seconds: number) => {
+  const mins = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, "0");
+  const secs = (seconds % 60).toString().padStart(2, "0");
+  return `${mins}:${secs}`;
 };

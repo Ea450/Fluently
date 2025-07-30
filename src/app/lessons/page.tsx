@@ -12,9 +12,9 @@ const Lessons = async () => {
   }
   const lessons = await getUserLessons(userId);
   return (
-    <section className="h-[90vh]">
+    <main className="h-[90vh]">
       <UserSection />
-      <section>
+      <main>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
           Here you can find all your lessons. Click on a lesson to start
           learning!
@@ -27,8 +27,8 @@ const Lessons = async () => {
             <LessonCard key={lesson.id} {...lesson} />
           ))}
         </div>
-      </section>
-    </section>
+      </main>
+    </main>
   );
 };
 

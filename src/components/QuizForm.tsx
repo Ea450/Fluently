@@ -1,31 +1,44 @@
 "use client";
 
+import { updateQuizScore } from "@/lib/actions/languages";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import ConfettiExplosion from "react-confetti-explosion";
 
-const QuizForm = ({ questions }: { questions: Question[] }) => {
+const QuizForm = ({
+  questions,
+  quizId,
+}: {
+  questions: Question[];
+  quizId: string;
+}) => {
   const [answers, setAnswers] = useState<number[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [explode, setExplode] = useState(false);
+  const pathname = usePathname();
 
   const handleSelect = (questionIndex: number, choiceIndex: number) => {
     const newAnswers = [...answers];
     newAnswers[questionIndex] = choiceIndex;
     setAnswers(newAnswers);
   };
-
-  const handleSubmit = () => {
+  const score = answers.reduce((acc, answer, idx) => {
+    if (answer === questions[idx].correct_answer_index) return acc + 1;
+    return acc;
+  }, 0);
+  const handleSubmit = async () => {
     setSubmitted(true);
     setExplode(true);
 
     // Optional: auto stop confetti after 3 seconds
     setTimeout(() => setExplode(false), 3000);
+    await updateQuizScore(score, quizId);
   };
-
-  const score = answers.reduce((acc, answer, idx) => {
-    if (answer === questions[idx].correct_answer_index) return acc + 1;
-    return acc;
-  }, 0);
+  const handleRetry = () => {
+    setAnswers([]);
+    setSubmitted(false);
+    setExplode(false);
+  };
 
   return (
     <div className="p-4 space-y-4 border mt-10 rounded-2xl relative overflow-hidden">
@@ -56,7 +69,7 @@ const QuizForm = ({ questions }: { questions: Question[] }) => {
                   key={j}
                   disabled={submitted}
                   onClick={() => handleSelect(i, j)}
-                  className={`p-2 rounded border w-full text-center ${showColor}`}
+                  className={`p-2 rounded border w-full text-center cursor-pointer ${showColor}`}
                 >
                   {choice}
                 </button>
@@ -75,9 +88,14 @@ const QuizForm = ({ questions }: { questions: Question[] }) => {
             Submit Quiz
           </button>
         ) : (
-          <p className="font-bold text-xl">
-            Your score: {score}/{questions.length}
-          </p>
+          <div className="flex items-center justify-center gap-4">
+            <p className="font-bold text-xl">
+              Your score: {score}/{questions.length}
+            </p>
+            <button className="button" onClick={handleRetry}>
+              Retry
+            </button>
+          </div>
         )}
       </div>
 

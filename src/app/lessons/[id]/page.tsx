@@ -14,7 +14,7 @@ const lessonId = async ({ params }: { params: Promise<{ id: string }> }) => {
   const lesson: Lesson = await getLesson(id, user.id);
   const { language, duration, level, topic } = lesson;
   return (
-    <section className="mx-auto px-14 flex flex-col gap-8 pt-10 max-sm:px-2 mb-5">
+    <main className="mx-auto px-14 flex flex-col gap-8 pt-10 max-sm:px-2 mb-5">
       <article className="flex rounded-border justify-between p-6 max-md:flex-col border-2 border-black rounded-2xl items-center">
         <div className="flex items-center gap-2">
           <div className="size-[72px] flex items-center justify-center rounded-lg max-md:hidden">
@@ -38,7 +38,7 @@ const lessonId = async ({ params }: { params: Promise<{ id: string }> }) => {
             </p>
           </div>
         </div>
-        <div className=" max-md:hidden">{duration} minutes</div>
+        <div className="text-center max-md:hidden">{duration} minutes</div>
       </article>
       <AIConversation
         target_language={language}
@@ -48,8 +48,9 @@ const lessonId = async ({ params }: { params: Promise<{ id: string }> }) => {
         userName={user.firstName!}
         userImage={user.imageUrl!}
         lessonId={lesson.id}
+        duration={duration}
       />
-    </section>
+    </main>
   );
 };
 

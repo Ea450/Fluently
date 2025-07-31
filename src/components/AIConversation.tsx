@@ -6,6 +6,7 @@ import {
   cn,
   configureAssistant,
   extractFeedback,
+  generateFallbackFeedback,
   formatTime,
 } from "@/lib/utils";
 import Image from "next/image";
@@ -77,21 +78,45 @@ const AIConversation = ({
     vapi.stop();
     stopCountdown();
 
-    const lastAssistantMessage = [...messages]
+    console.log("🔄 Processing lesson feedback...");
+    
+    // Look for AI feedback in the last few assistant messages
+    const assistantMessages = [...messages]
       .reverse()
-      .find((msg) => msg.role === "assistant");
-    if (!lastAssistantMessage) return;
+      .filter((msg) => msg.role === "assistant")
+      .slice(0, 3); // Check last 3 assistant messages
 
-    const result = extractFeedback(lastAssistantMessage.content);
-    if (result?.rating && result?.feedback) {
+    let feedbackResult = null;
+    
+    // Try to extract feedback from each message
+    for (const message of assistantMessages) {
+      feedbackResult = extractFeedback(message.content);
+      if (feedbackResult) {
+        console.log("✅ Found AI feedback in message");
+        break;
+      }
+    }
+
+    // If no AI feedback found, generate fallback feedback
+    if (!feedbackResult) {
+      console.log("⚠️ No AI feedback found, generating fallback feedback");
+      feedbackResult = generateFallbackFeedback(messages.length);
+    }
+
+    // Save the feedback to Supabase
+    if (feedbackResult?.rating !== undefined && feedbackResult?.feedback) {
       try {
-        await saveRateAndFeedback(lessonId, result.rating, result.feedback);
-        console.log("✅ Feedback saved to Supabase");
+        await saveRateAndFeedback(lessonId, feedbackResult.rating, feedbackResult.feedback);
+        console.log("✅ Feedback saved to Supabase:", {
+          rating: Math.round(feedbackResult.rating * 100) + "%",
+          feedbackLength: feedbackResult.feedback.length
+        });
       } catch (err) {
         console.error("❌ Failed to save feedback:", err);
+        // Even if saving fails, we still want to show the user completed the lesson
       }
     } else {
-      console.warn("⚠️ No valid feedback found.");
+      console.error("❌ Invalid feedback structure");
     }
   };
 

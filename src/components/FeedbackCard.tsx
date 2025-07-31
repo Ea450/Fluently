@@ -71,11 +71,17 @@ const FeedbackCard = ({ feedback }: FeedbackCardProps) => {
       </div>
 
       {/* Feedback Text */}
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          AI Feedback:
-        </h4>
-        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-700">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-lg">🤖</span>
+          <h4 className="text-sm font-medium text-blue-700 dark:text-blue-300">
+            AI Tutor Feedback
+          </h4>
+          <span className="text-xs bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 px-2 py-1 rounded-full">
+            Auto-generated
+          </span>
+        </div>
+        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
           {feedbackText}
         </p>
       </div>

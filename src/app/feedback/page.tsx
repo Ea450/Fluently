@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
-import { getUserFeedback, getUserFeedbackAnalytics, getUserLessons } from "@/lib/actions/languages";
+import { getUserFeedback, getUserFeedbackAnalytics } from "@/lib/actions/languages";
 import UserSection from "@/components/UserSection";
 import FeedbackCard from "@/components/FeedbackCard";
 import FeedbackAnalytics from "@/components/FeedbackAnalytics";
-import ManualFeedbackForm from "@/components/ManualFeedbackForm";
+import FeedbackDebug from "@/components/FeedbackDebug";
 
 const FeedbackPage = () => {
   const { userId, isLoaded } = useAuth();
@@ -17,9 +17,7 @@ const FeedbackPage = () => {
     averageRating: 0,
     languageStats: []
   });
-  const [lessons, setLessons] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showManualForm, setShowManualForm] = useState(false);
 
   useEffect(() => {
     if (isLoaded && !userId) {
@@ -32,15 +30,13 @@ const FeedbackPage = () => {
     
     setIsLoading(true);
     try {
-      const [feedbackResult, analyticsResult, lessonsResult] = await Promise.all([
+      const [feedbackResult, analyticsResult] = await Promise.all([
         getUserFeedback(userId),
-        getUserFeedbackAnalytics(userId),
-        getUserLessons(userId)
+        getUserFeedbackAnalytics(userId)
       ]);
       
       setFeedbackData(feedbackResult);
       setAnalytics(analyticsResult);
-      setLessons(lessonsResult);
     } catch (error) {
       console.error("Failed to fetch data:", error);
     } finally {
@@ -54,9 +50,8 @@ const FeedbackPage = () => {
     }
   }, [userId]);
 
-  const handleFeedbackSubmitted = () => {
+  const refreshData = () => {
     fetchData(); // Refresh all data
-    setShowManualForm(false); // Hide the form
   };
 
   const exportFeedback = () => {
@@ -102,36 +97,31 @@ const FeedbackPage = () => {
       {/* Header with Actions */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
-          📊 Learning Feedback & Analytics
+          🤖 AI-Generated Learning Feedback
         </h1>
         <div className="flex gap-3">
           <button
-            onClick={() => setShowManualForm(!showManualForm)}
+            onClick={refreshData}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
           >
-            {showManualForm ? "Hide Form" : "Add Feedback"}
+            🔄 Refresh
           </button>
           {feedbackData.length > 0 && (
             <button
               onClick={exportFeedback}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
             >
-              Export CSV
+              📤 Export CSV
             </button>
           )}
-        </div>
+                </div>
       </div>
 
-      {/* Manual Feedback Form */}
-      {showManualForm && (
-        <section className="mb-8">
-          <ManualFeedbackForm 
-            lessons={lessons} 
-            onFeedbackSubmitted={handleFeedbackSubmitted}
-          />
-        </section>
-      )}
-      
+      {/* Debug Section - Remove in production */}
+      <section className="mb-8">
+        <FeedbackDebug />
+      </section>
+        
       {/* Analytics Section */}
       <section className="mb-8">
         <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
@@ -153,19 +143,18 @@ const FeedbackPage = () => {
         
         {feedbackData.length === 0 ? (
           <div className="bg-white dark:bg-[#1F2937] rounded-2xl shadow p-8 text-center">
-            <div className="text-6xl mb-4">🎯</div>
+            <div className="text-6xl mb-4">🤖</div>
             <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-              No feedback yet!
+              No AI feedback yet!
             </h3>
             <p className="text-gray-500 dark:text-gray-400 text-lg mb-4">
-              Complete some lessons or add manual feedback to see your progress here.
+              Complete some lessons with AI conversations to receive personalized feedback and see your progress here.
             </p>
-            <button
-              onClick={() => setShowManualForm(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              Add Your First Feedback
-            </button>
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mt-4">
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                💡 <strong>How it works:</strong> After each lesson, our AI tutor automatically analyzes your performance and provides detailed feedback including strengths, areas for improvement, and next steps.
+              </p>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

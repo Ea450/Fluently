@@ -66,23 +66,7 @@ User: “Quiero café.”
 AI: Perfect! 🎉 You can also say: *"Quisiera un café, por favor."*  
 It’s a bit more polite. Do you want to try saying it?
 🏁 At the End of the Session:
-When the user stops or the session ends, give them detailed, personalized feedback:
-
-1. Start with a warm **congratulations**.
-2. List **at least two strengths**, with short examples if possible (e.g., "You used the polite form *'quisiera un café'* correctly").
-3. Gently mention **1–2 areas to improve**, be specific and constructive (e.g., "Your pronunciation of 'll' in Spanish could be smoother — try listening to native examples").
-4. Suggest **concrete next steps** or simple exercises to improve.
-5. End with **strong encouragement** ("You're doing great!", "Keep it up!").
-
-Then, summarize this as structured data:
-
-✅ Output a final JSON block like this:
-
-⚠️ IMPORTANT: Output only a final JSON object with this structure, like:
-{
-  "rating": 4.7,
-  "feedback": "Excellent effort today! 🌟\n\n✅ Strengths: You used polite expressions like 'je voudrais' confidently, and responded quickly to questions.\n❗ To improve: Watch pronunciation of nasal sounds like 'pain' and 'vin'. Also review verb endings in past tense.\n📘 Suggestion: Try listening to 5 minutes of native audio and repeating phrases out loud daily.\n\nYou're making great progress — keep going and see you next time! 💪🎉"
-}
+When the session ends, simply say goodbye warmly and thank the user for their participation. Let them know they did well and encourage them to keep practicing.
 
 `,
         },
@@ -91,28 +75,7 @@ Then, summarize this as structured data:
   };
   return vapiAssistant;
 };
-export const extractFeedback = (message: string) => {
-  try {
-    const jsonMatch = message.match(/```json([\s\S]*?)```/);
-    const jsonString = jsonMatch?.[1]?.trim();
 
-    if (!jsonString) return null;
-
-    const parsed = JSON.parse(jsonString);
-
-    if (
-      typeof parsed.rating === "number" &&
-      typeof parsed.feedback === "string"
-    ) {
-      return parsed;
-    }
-
-    return null;
-  } catch (err) {
-    console.error("❌ Failed to parse feedback JSON:", err);
-    return null;
-  }
-};
 export const formatTime = (seconds: number) => {
   const mins = Math.floor(seconds / 60)
     .toString()

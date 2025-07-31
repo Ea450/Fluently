@@ -5,9 +5,9 @@ import { vapi } from "@/lib/actions/vapi.sdk";
 import {
   cn,
   configureAssistant,
-  extractFeedback,
   formatTime,
 } from "@/lib/utils";
+import { generateAIFeedback, generateFallbackFeedback } from "@/lib/services/aiFeedback";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 
@@ -68,7 +68,7 @@ const AIConversation = ({
       clientMessages: ["transcript"],
       serverMessages: [],
     };
-    // @ts-expect-error
+    // @ts-expect-error - Vapi start method typing issue with assistant overrides
     vapi.start(configureAssistant(), assistantOverrides);
   };
 
@@ -77,21 +77,49 @@ const AIConversation = ({
     vapi.stop();
     stopCountdown();
 
-    const lastAssistantMessage = [...messages]
-      .reverse()
-      .find((msg) => msg.role === "assistant");
-    if (!lastAssistantMessage) return;
+    // Generate AI feedback based on the entire conversation
+    try {
+      console.log("🤖 Generating AI feedback...");
+      
+      const aiResult = await generateAIFeedback(
+        messages,
+        target_language,
+        user_level,
+        topic,
+        duration
+      );
 
-    const result = extractFeedback(lastAssistantMessage.content);
-    if (result?.rating && result?.feedback) {
-      try {
-        await saveRateAndFeedback(lessonId, result.rating, result.feedback);
-        console.log("✅ Feedback saved to Supabase");
-      } catch (err) {
-        console.error("❌ Failed to save feedback:", err);
+      let feedbackResult = aiResult;
+      
+      // Use fallback if AI feedback generation fails
+      if (!feedbackResult) {
+        console.warn("⚠️ AI feedback failed, using fallback feedback");
+        feedbackResult = generateFallbackFeedback(
+          target_language,
+          user_level,
+          messages.filter(msg => msg.role === 'user').length
+        );
       }
-    } else {
-      console.warn("⚠️ No valid feedback found.");
+
+      if (feedbackResult?.rating && feedbackResult?.feedback) {
+        await saveRateAndFeedback(lessonId, feedbackResult.rating, feedbackResult.feedback);
+        console.log("✅ AI-generated feedback saved to Supabase");
+      }
+    } catch (err) {
+      console.error("❌ Failed to generate/save AI feedback:", err);
+      
+      // Use fallback feedback on error
+      try {
+        const fallbackResult = generateFallbackFeedback(
+          target_language,
+          user_level,
+          messages.filter(msg => msg.role === 'user').length
+        );
+        await saveRateAndFeedback(lessonId, fallbackResult.rating, fallbackResult.feedback);
+        console.log("✅ Fallback feedback saved to Supabase");
+      } catch (fallbackErr) {
+        console.error("❌ Failed to save fallback feedback:", fallbackErr);
+      }
     }
   };
 

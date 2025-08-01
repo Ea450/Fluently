@@ -20,7 +20,7 @@ const lessonId = async ({ params }: { params: Promise<{ id: string }> }) => {
           <div className="size-[72px] flex items-center justify-center rounded-lg max-md:hidden">
             <Image
               src={user.imageUrl}
-              alt={user.fullName!}
+              alt={user.firstName! || "user"}
               width={35}
               height={35}
             />

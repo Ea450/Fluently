@@ -7,7 +7,7 @@ import QuizCard from "@/components/QuizCard";
 
 const Dashboard = async () => {
   const user = await auth();
-  if (!user) redirect("/sign-in");
+  if (!user.isAuthenticated) redirect("/sign-in");
 
   const lessons = await getUserLessons(user.userId!);
   const quizzes = await getUserQuizzes(user.userId!);

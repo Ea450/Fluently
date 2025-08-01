@@ -7,6 +7,7 @@ import React from "react";
 const Home = async () => {
   const user = await auth();
   if (user.isAuthenticated) redirect("/dashboard");
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
       <Image
@@ -29,7 +30,7 @@ const Home = async () => {
         </p>
       </div>
       <Link
-        href="/dashboard"
+        href={user.isAuthenticated ? "/dashvoard" : "/sign-in"}
         className="mt-8 px-6 py-3 dark:bg-blue-600 text-white rounded-lg dark:hover:bg-blue-700 transition-colors bg-cyan-950 hover:bg-cyan-800"
       >
         Lets Get Started

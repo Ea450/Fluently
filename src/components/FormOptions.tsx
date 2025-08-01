@@ -53,7 +53,7 @@ const FormOptions = () => {
       const quizId = await createQuiz(values);
       redirect(`/practice/quiz/${quizId}`);
     } else {
-      if (pathname === "/createLesson") {
+      if (pathname === "/lessons/createLesson") {
         const lesson = await CreateLesson(
           values.language,
           values.level,
@@ -61,7 +61,7 @@ const FormOptions = () => {
           +values.duration!
         );
         if (lesson) {
-          redirect(`lessons/${lesson.id}`);
+          redirect(`${lesson.id}`);
         }
       }
     }
@@ -104,7 +104,7 @@ const FormOptions = () => {
             </FormItem>
           )}
         />
-        {pathname === "/createLesson" && (
+        {pathname === "/lessons/createLesson" && (
           <FormField
             control={form.control}
             name="topic"
@@ -170,7 +170,7 @@ const FormOptions = () => {
             </FormItem>
           )}
         />
-        {pathname === "/createLesson" && (
+        {pathname === "/lessons/createLesson" && (
           <FormField
             control={form.control}
             name="duration"
@@ -195,7 +195,7 @@ const FormOptions = () => {
         <Button type="submit" disabled={loading} className="cursor-pointer">
           {loading
             ? "Loading..."
-            : pathname === "/createLesson"
+            : pathname === "/lessons/createLesson"
             ? "Create Lesson"
             : "Start Quiz"}
         </Button>

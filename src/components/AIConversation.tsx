@@ -6,8 +6,10 @@ import {
   cn,
   configureAssistant,
   formatTime,
+  generateAIFeedback,
+  generateFallbackFeedback,
 } from "@/lib/utils";
-import { generateAIFeedback, generateFallbackFeedback } from "@/lib/services/aiFeedback";
+
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 
@@ -30,7 +32,7 @@ const AIConversation = ({
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [messages, setMessages] = useState<SavedMessage[]>([]);
+  const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [remainingTime, setRemainingTime] = useState(duration * 60);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -80,7 +82,7 @@ const AIConversation = ({
     // Generate AI feedback based on the entire conversation
     try {
       console.log("🤖 Generating AI feedback...");
-      
+
       const aiResult = await generateAIFeedback(
         messages,
         target_language,
@@ -90,32 +92,40 @@ const AIConversation = ({
       );
 
       let feedbackResult = aiResult;
-      
+
       // Use fallback if AI feedback generation fails
       if (!feedbackResult) {
         console.warn("⚠️ AI feedback failed, using fallback feedback");
         feedbackResult = generateFallbackFeedback(
           target_language,
           user_level,
-          messages.filter(msg => msg.role === 'user').length
+          messages.filter((msg) => msg.role === "user").length
         );
       }
 
       if (feedbackResult?.rating && feedbackResult?.feedback) {
-        await saveRateAndFeedback(lessonId, feedbackResult.rating, feedbackResult.feedback);
+        await saveRateAndFeedback(
+          lessonId,
+          feedbackResult.rating,
+          feedbackResult.feedback
+        );
         console.log("✅ AI-generated feedback saved to Supabase");
       }
     } catch (err) {
       console.error("❌ Failed to generate/save AI feedback:", err);
-      
+
       // Use fallback feedback on error
       try {
         const fallbackResult = generateFallbackFeedback(
           target_language,
           user_level,
-          messages.filter(msg => msg.role === 'user').length
+          messages.filter((msg) => msg.role === "user").length
         );
-        await saveRateAndFeedback(lessonId, fallbackResult.rating, fallbackResult.feedback);
+        await saveRateAndFeedback(
+          lessonId,
+          fallbackResult.rating,
+          fallbackResult.feedback
+        );
         console.log("✅ Fallback feedback saved to Supabase");
       } catch (fallbackErr) {
         console.error("❌ Failed to save fallback feedback:", fallbackErr);
@@ -208,7 +218,7 @@ const AIConversation = ({
           <div className="user-avatar">
             <Image
               src={userImage}
-              alt={userName}
+              alt={userName || "user"}
               width={130}
               height={130}
               className="rounded-lg"

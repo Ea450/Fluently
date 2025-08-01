@@ -41,7 +41,10 @@ const Practice = () => {
             you can have a converstion with AI to improve your pronunciation and
             speaking and listening.
           </p>
-          <button className="button" onClick={() => redirect("/createLesson")}>
+          <button
+            className="button"
+            onClick={() => redirect("/lessons/createLesson")}
+          >
             Start Speaking
           </button>
         </div>

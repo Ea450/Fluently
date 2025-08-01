@@ -29,6 +29,7 @@ type Lesson = {
   level: string;
   topic: string;
   duration: number;
+  feedback?: string;
 };
 interface AIConversationProps {
   target_language: string;
@@ -43,10 +44,6 @@ interface QuizProps {
   setQuiz: (value: boolean) => void;
 }
 
-interface SavedMessage {
-  role: "user" | "system" | "assistant";
-  content: string;
-}
 interface LessonCardProps {
   id: string;
   level: string;
@@ -58,4 +55,13 @@ interface QuizCardProps {
   level: string;
   language: string;
   score: number;
+}
+interface ConversationMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp?: number;
+}
+interface FeedbackResult {
+  rating: number;
+  feedback: string;
 }

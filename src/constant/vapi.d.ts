@@ -5,12 +5,6 @@ enum MessageTypeEnum {
   ADD_MESSAGE = "add-message",
 }
 
-enum MessageRoleEnum {
-  USER = "user",
-  SYSTEM = "system",
-  ASSISTANT = "assistant",
-}
-
 enum TranscriptMessageTypeEnum {
   PARTIAL = "partial",
   FINAL = "final",

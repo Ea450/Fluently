@@ -41,7 +41,7 @@ export default function RootLayout({
           >
             <Navbar />
             {children}
-            <div className="absolute bottom-0 w-full">
+            <div className="relative bottom-5 w-full">
               <Footer />
             </div>
             <Toaster />

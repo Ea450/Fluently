@@ -16,7 +16,7 @@ import { navIcons } from "@/constant/data";
 
 const Navbar = () => {
   const pathname = usePathname();
-  const [showIcons, setShowIcons] = useState(false);
+  const [showIcons, setShowIcons] = useState(true);
   return (
     <header className="flex justify-between items-center p-4 gap-4 h-16 ">
       <div>
@@ -41,11 +41,19 @@ const Navbar = () => {
         </ul>
       )}
       {pathname !== "/" && pathname !== "/sign-in" && showIcons && (
-        <div className=" sm:hidden">
+        <div className="sm:hidden">
           <NavMenu setShowIcons={setShowIcons} />
         </div>
       )}
       <div className="flex items-center gap-2">
+        <Image
+          src="/images/navmenu.png"
+          alt="menu"
+          width={24}
+          height={24}
+          className="cursor-pointer rounded-2xl sm:hidden"
+          onClick={() => setShowIcons(!showIcons)}
+        />
         <ToggleTheme />
         <SignedOut>
           <SignInButton>

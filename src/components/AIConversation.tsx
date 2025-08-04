@@ -179,7 +179,7 @@ const AIConversation = ({
       <section className="flex gap-8 max-sm:flex-col">
         <section className="relative w-full max-w-2xl mx-auto pt-10 px-4 pb-10 overflow-hidden rounded-lg border-2 border-black">
           <div
-            className="overflow-y-auto max-h-[40vh] no-scrollbar space-y-4 px-2"
+            className="overflow-y-auto min-h-[20vh] max-h-[40vh] no-scrollbar space-y-4 px-2"
             style={{ scrollbarWidth: "none" }}
           >
             {messages.map((message, index) => {
@@ -208,7 +208,7 @@ const AIConversation = ({
             })}
           </div>
           {callStatus === CallStatus.ACTIVE && (
-            <div className="text-xl font-mono text-green-600 absolute bottom-2 right-2">
+            <div className="text-md sm:text-xl font-mono text-green-600 absolute bottom-2 right-2">
               ⏳ Remaining Time: {formatTime(remainingTime)}
             </div>
           )}

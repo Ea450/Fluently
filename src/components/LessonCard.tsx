@@ -19,16 +19,16 @@ export default function LessonCard({
           style={{ width: `${rate * 2 * 10}%` }}
         ></div>
       </div>
-      <div className="flex mt-4 gap-4">
+      <div className="flex mt-4 justify-evenly gap-1">
         <Link
           href={`/lessons/${id}`}
-          className="dark:bg-blue-600 text-white px-2 py-1 rounded cursor-pointer bg-stone-900 mt-2"
+          className="dark:bg-blue-600 text-white px-2 py-1 rounded cursor-pointer bg-stone-900 mt-2 text-center sm:text-sm md:text-base"
         >
           Get Lesson
         </Link>
         <Link
           href={`/lessons/feedback/${id}`}
-          className="dark:bg-blue-600 text-white px-2 py-1 rounded cursor-pointer bg-stone-900 mt-2"
+          className="dark:bg-blue-600 text-white px-2 py-1 rounded cursor-pointer bg-stone-900 mt-2 text-center sm:text-sm md:text-base"
         >
           Check Feedback
         </Link>

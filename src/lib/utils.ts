@@ -85,11 +85,6 @@ export const formatTime = (seconds: number) => {
   return `${mins}:${secs}`;
 };
 
-const openai = new OpenAI({
-  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true,
-});
-
 export const generateAIFeedback = async (
   messages: ConversationMessage[],
   targetLanguage: string,
@@ -104,123 +99,294 @@ export const generateAIFeedback = async (
       .map((msg) => `${msg.role}: ${msg.content}`)
       .join("\n");
 
-    const prompt = `
-You are an expert language learning evaluator. Analyze this conversation between a language learner and an AI assistant.
-
-**Context:**
-- Target Language: ${targetLanguage}
-- User Level: ${userLevel}
-- Topic: ${topic}
-- Session Duration: ${duration} minutes
-
-**Conversation:**
-${conversationHistory}
-
-**Task:**
-Provide detailed, personalized feedback for the language learner based on their performance in this conversation. Consider:
-
-1. **Language Skills Demonstrated:**
-   - Vocabulary usage and range
-   - Grammar accuracy
-   - Pronunciation attempts (if evident from text)
-   - Conversational flow and natural responses
-   - Cultural awareness and appropriate language use
-
-2. **Engagement and Participation:**
-   - Active participation in the conversation
-   - Willingness to try new phrases or expressions
-   - Response to corrections and guidance
-
-3. **Progress Indicators:**
-   - Improvement throughout the session
-   - Confidence building
-   - Understanding of context and meaning
-
-**Provide feedback following this structure:**
-
-1. Start with warm congratulations and encouragement
-2. List at least 2-3 specific strengths with examples from the conversation
-3. Mention 1-2 areas for improvement with constructive, specific advice
-4. Suggest concrete next steps or exercises
-5. End with strong encouragement
-
-**Rating Criteria (1-5 scale):**
-- 1.0-2.0: Beginner effort, needs significant improvement
-- 2.1-3.0: Basic level, showing some understanding
-- 3.1-4.0: Good progress, solid foundation
-- 4.1-5.0: Excellent performance, advanced skills
-
-**Output Format:**
-Respond with ONLY a JSON object in this exact format:
-
-{
-  "rating": [number between 1.0 and 5.0],
-  "feedback": "[detailed feedback string with emojis and formatting as specified above]"
-}
-`;
-
-    // Send request to Groq API
-    const grokResponse = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
+    // Try multiple free AI services in sequence
+    const freeAIServices = [
       {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`, // server-only variable
-        },
-        body: JSON.stringify({
-          model: "llama3-70b-8192", // Use Groq-supported model
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are a professional language learning evaluator. Provide constructive, encouraging feedback based on conversation analysis. Always respond with valid JSON only.",
+        name: "HuggingFace",
+        url: "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium",
+        transform: (data: any) => data[0]?.generated_text || "",
+      },
+      {
+        name: "Ollama (if available)",
+        url: "http://localhost:11434/api/generate",
+        transform: (data: any) => data.response || "",
+      },
+    ];
+
+    let aiResponse = "";
+
+    for (const service of freeAIServices) {
+      try {
+        const response = await fetch(service.url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            inputs: `Analyze this language learning conversation and provide feedback. Target language: ${targetLanguage}, Level: ${userLevel}, Topic: ${topic}. Conversation: ${conversationHistory.substring(
+              0,
+              500
+            )}...`,
+            parameters: {
+              max_length: 200,
+              temperature: 0.7,
             },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: 800,
-        }),
+          }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          aiResponse = service.transform(result);
+          console.log(`✅ Successfully used ${service.name} for AI feedback`);
+          break;
+        }
+      } catch (error) {
+        console.log(`❌ ${service.name} service failed:`, error);
+        continue;
       }
+    }
+
+    // If no free AI service worked, use intelligent fallback
+    if (!aiResponse) {
+      console.log(
+        "🔄 All free AI services unavailable, using intelligent fallback"
+      );
+      return generateIntelligentFeedback(
+        messages,
+        targetLanguage,
+        userLevel,
+        topic,
+        duration
+      );
+    }
+
+    // Parse the AI response and create structured feedback
+    const feedback = parseAIResponseToFeedback(
+      aiResponse,
+      targetLanguage,
+      userLevel,
+      messages
     );
 
-    const rawText = await grokResponse.text();
-    console.log("🧠 Groq raw response:", rawText);
-
-    const result = JSON.parse(rawText);
-    const response = result.choices?.[0]?.message?.content;
-
-    if (!response) {
-      console.error("❌ No response from Groq model");
-      return null;
-    }
-
-    try {
-      const parsed = JSON.parse(response);
-
-      if (
-        typeof parsed.rating === "number" &&
-        typeof parsed.feedback === "string" &&
-        parsed.rating >= 1.0 &&
-        parsed.rating <= 5.0
-      ) {
-        return parsed;
-      } else {
-        console.error("❌ Invalid feedback format from Groq:", parsed);
-        return null;
-      }
-    } catch (parseError) {
-      console.error("❌ Failed to parse JSON response content:", parseError);
-      console.error("❌ Raw message content:", response);
-      return null;
-    }
+    return feedback;
   } catch (error) {
-    console.error("❌ Error generating AI feedback:", error);
-    return null;
+    console.log(
+      "🔄 Error with free AI service, using intelligent fallback:",
+      error
+    );
+    return generateIntelligentFeedback(
+      messages,
+      targetLanguage,
+      userLevel,
+      topic,
+      duration
+    );
   }
+};
+
+// Helper function to generate intelligent feedback without external AI
+const generateIntelligentFeedback = (
+  messages: ConversationMessage[],
+  targetLanguage: string,
+  userLevel: string,
+  topic: string,
+  duration: number
+): FeedbackResult => {
+  const userMessages = messages.filter((msg) => msg.role === "user");
+  const assistantMessages = messages.filter((msg) => msg.role === "assistant");
+  const messageCount = userMessages.length;
+  const avgMessageLength =
+    userMessages.reduce((sum, msg) => sum + msg.content.length, 0) /
+    Math.max(messageCount, 1);
+
+  // Calculate rating based on comprehensive engagement metrics
+  let rating = 2.5; // Base rating
+
+  // Boost rating based on participation and engagement
+  if (messageCount >= 3) rating += 0.3;
+  if (messageCount >= 5) rating += 0.4;
+  if (messageCount >= 8) rating += 0.3;
+  if (avgMessageLength > 15) rating += 0.3;
+  if (avgMessageLength > 25) rating += 0.2;
+  if (duration > 3) rating += 0.2;
+  if (duration > 7) rating += 0.2;
+
+  // Analyze conversation quality
+  const hasQuestions = userMessages.some((msg) => msg.content.includes("?"));
+  const hasLongResponses = userMessages.some((msg) => msg.content.length > 30);
+  const hasVariedVocabulary =
+    new Set(userMessages.flatMap((msg) => msg.content.toLowerCase().split(" ")))
+      .size > 20;
+
+  if (hasQuestions) rating += 0.2;
+  if (hasLongResponses) rating += 0.2;
+  if (hasVariedVocabulary) rating += 0.2;
+
+  // Cap at 5.0
+  rating = Math.min(5.0, rating);
+
+  // Generate contextual feedback based on analysis
+  const strengths = [];
+  const improvements = [];
+
+  if (messageCount >= 5) {
+    strengths.push("Active participation throughout the session");
+  }
+  if (avgMessageLength > 15) {
+    strengths.push("Good response length and engagement");
+  }
+  if (duration > 3) {
+    strengths.push("Sustained conversation effort");
+  }
+  if (hasQuestions) {
+    strengths.push("Good use of questions to engage in conversation");
+  }
+  if (hasLongResponses) {
+    strengths.push("Demonstrated ability to provide detailed responses");
+  }
+  if (hasVariedVocabulary) {
+    strengths.push("Good vocabulary diversity in responses");
+  }
+
+  if (messageCount < 3) {
+    improvements.push("Try to participate more actively in conversations");
+  }
+  if (avgMessageLength < 10) {
+    improvements.push("Practice forming longer, more detailed responses");
+  }
+  if (!hasQuestions) {
+    improvements.push(
+      "Try asking questions to make conversations more interactive"
+    );
+  }
+  if (!hasLongResponses) {
+    improvements.push("Work on expanding your responses with more details");
+  }
+
+  // Generate level-specific feedback
+  const levelSpecificAdvice = getLevelSpecificAdvice(
+    userLevel,
+    targetLanguage,
+    topic
+  );
+
+  const feedback = `Great work on your ${targetLanguage} practice session! 🌟
+
+✅ **Strengths:**
+${
+  strengths.length > 0
+    ? strengths.map((s) => `- ${s}`).join("\n")
+    : "- Demonstrated commitment to learning\n- Showed willingness to engage with the content"
+}
+
+📈 **Areas to continue working on:**
+${
+  improvements.length > 0
+    ? improvements.map((i) => `- ${i}`).join("\n")
+    : "- Keep practicing regular conversation to build fluency\n- Focus on expanding your vocabulary in everyday topics"
+}
+
+${levelSpecificAdvice}
+
+💡 **Next steps:**
+- Try to have longer conversations to build confidence
+- Practice with native speakers when possible
+- Review vocabulary related to "${topic}" for better preparation
+- Consider recording yourself to improve pronunciation
+
+Keep up the excellent work! Every conversation brings you closer to fluency. 💪✨`;
+
+  return { rating, feedback };
+};
+
+// Helper function to provide level-specific advice
+const getLevelSpecificAdvice = (
+  userLevel: string,
+  targetLanguage: string,
+  topic: string
+): string => {
+  const levelAdvice = {
+    beginner: `🎯 **${
+      userLevel.charAt(0).toUpperCase() + userLevel.slice(1)
+    } Level Tips:**
+- Focus on basic vocabulary and simple sentence structures
+- Don't worry about making mistakes - they're part of learning
+- Practice common phrases for "${topic}" situations
+- Use the target language as much as possible, even if it's just simple words`,
+
+    amateur: `🎯 **${
+      userLevel.charAt(0).toUpperCase() + userLevel.slice(1)
+    } Level Tips:**
+- Work on building more complex sentences
+- Practice using different verb tenses when appropriate
+- Expand your vocabulary with synonyms and related words
+- Try to express opinions and preferences in ${targetLanguage}`,
+
+    intermediate: `🎯 **${
+      userLevel.charAt(0).toUpperCase() + userLevel.slice(1)
+    } Level Tips:**
+- Focus on natural conversation flow and idiomatic expressions
+- Practice using conditional sentences and complex structures
+- Work on understanding cultural nuances in ${targetLanguage}
+- Challenge yourself with more abstract topics beyond "${topic}"`,
+
+    advanced: `🎯 **${
+      userLevel.charAt(0).toUpperCase() + userLevel.slice(1)
+    } Level Tips:**
+- Perfect your pronunciation and accent
+- Master subtle grammatical nuances and advanced vocabulary
+- Practice debating and expressing complex ideas
+- Work on understanding regional dialects and slang in ${targetLanguage}`,
+  };
+
+  return (
+    levelAdvice[userLevel.toLowerCase() as keyof typeof levelAdvice] ||
+    levelAdvice.beginner
+  );
+};
+
+// Helper function to parse AI response into structured feedback
+const parseAIResponseToFeedback = (
+  aiResponse: string,
+  targetLanguage: string,
+  userLevel: string,
+  messages: ConversationMessage[]
+): FeedbackResult => {
+  // Extract rating from AI response or calculate based on content
+  let rating = 3.5; // Default rating
+
+  // Simple heuristics to adjust rating based on AI response content
+  const positiveWords = [
+    "good",
+    "great",
+    "excellent",
+    "well",
+    "improved",
+    "progress",
+  ];
+  const negativeWords = ["needs", "improve", "practice", "work on", "struggle"];
+
+  const responseLower = aiResponse.toLowerCase();
+  const positiveCount = positiveWords.filter((word) =>
+    responseLower.includes(word)
+  ).length;
+  const negativeCount = negativeWords.filter((word) =>
+    responseLower.includes(word)
+  ).length;
+
+  if (positiveCount > negativeCount) rating += 0.5;
+  if (negativeCount > positiveCount) rating -= 0.5;
+
+  // Ensure rating is within bounds
+  rating = Math.max(1.0, Math.min(5.0, rating));
+
+  // Use AI response as feedback, or fallback to intelligent feedback
+  const feedback =
+    aiResponse.trim() ||
+    generateIntelligentFeedback(messages, targetLanguage, userLevel, "", 0)
+      .feedback;
+
+  return { rating, feedback };
 };
 
 export const generateFallbackFeedback = (

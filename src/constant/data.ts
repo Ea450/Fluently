@@ -87,7 +87,20 @@ export const LangMap: Record<string, string> = {
 
 export const levels = ["amateur", "beginner", "advanced", "intermediate"];
 
-export const voices = {
-  male: { casual: "2BJW5coyhAzSr8STdHbE", formal: "c6SfcYrb2t09NHXiT80T" },
-  female: { casual: "ZIlrSGI4jZqobxRKprJz", formal: "sarah" },
-};
+export const navIcons = [
+  {
+    id: 1,
+    href: "/dashboard",
+    text: "Dashboard",
+  },
+  {
+    id: 2,
+    href: "/lessons",
+    text: "Lessons",
+  },
+  {
+    id: 3,
+    href: "/practice",
+    text: "Practice",
+  },
+];

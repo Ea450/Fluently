@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import UserSection from "@/components/UserSection";
 import { getUserLessons, getUserQuizzes } from "@/lib/actions/languages";
 import QuizCard from "@/components/QuizCard";
+import Link from "next/link";
 
 const Dashboard = async () => {
   const user = await auth();
@@ -12,7 +13,7 @@ const Dashboard = async () => {
   const lessons = await getUserLessons(user.userId!);
   const quizzes = await getUserQuizzes(user.userId!);
   return (
-    <main className="h-[90vh]">
+    <main className="min-h-screen">
       {/* Greeting */}
 
       <UserSection />
@@ -23,9 +24,18 @@ const Dashboard = async () => {
           📚 Your Lessons
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lessons.map((lesson) => (
-            <LessonCard key={lesson.id} {...lesson} />
-          ))}
+          {lessons.length > 0 ? (
+            lessons.map((lesson) => <LessonCard key={lesson.id} {...lesson} />)
+          ) : (
+            <div className="text-center flex flex-col gap-2">
+              <p className="text-gray-600 dark:text-gray-400">
+                You haven't taken any lessons yet.
+              </p>
+              <Link href="/lessons/createLesson" className="button">
+                Start lesson
+              </Link>
+            </div>
+          )}
         </div>
       </main>
 
@@ -35,9 +45,13 @@ const Dashboard = async () => {
           🧠 Your Quizzes
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {quizzes.map((quiz) => (
-            <QuizCard key={quiz.id} {...quiz} />
-          ))}
+          {quizzes.length > 0 ? (
+            quizzes.map((quiz) => <QuizCard key={quiz.id} {...quiz} />)
+          ) : (
+            <p className="text-gray-600 dark:text-gray-400">
+              You haven't taken any quizzes yet.
+            </p>
+          )}
         </div>
       </main>
     </main>

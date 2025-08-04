@@ -19,7 +19,7 @@ const Practice = () => {
     setQuiz(false);
   };
   return (
-    <main className="h-[90vh]">
+    <main className="min-h-screen">
       <UserSection />
       <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
         🎯 Practice

@@ -65,3 +65,6 @@ interface FeedbackResult {
   rating: number;
   feedback: string;
 }
+type NavMenuProps = {
+  setShowIcons: (show: boolean) => void;
+};

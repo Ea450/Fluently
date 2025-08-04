@@ -2,6 +2,7 @@ import LessonCard from "@/components/LessonCard";
 import UserSection from "@/components/UserSection";
 import { getUserLessons } from "@/lib/actions/languages";
 import { auth } from "@clerk/nextjs/server";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 const Lessons = async () => {
@@ -12,7 +13,7 @@ const Lessons = async () => {
   }
   const lessons = await getUserLessons(userId);
   return (
-    <main className="h-[90vh]">
+    <main className="min-h-screen">
       <UserSection />
       <main>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -23,9 +24,18 @@ const Lessons = async () => {
           📚 Your Lessons
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lessons.map((lesson) => (
-            <LessonCard key={lesson.id} {...lesson} />
-          ))}
+          {lessons.length > 0 ? (
+            lessons.map((lesson) => <LessonCard key={lesson.id} {...lesson} />)
+          ) : (
+            <div className="text-center flex flex-col gap-2">
+              <p className="text-gray-600 dark:text-gray-400">
+                You haven't taken any lessons yet.
+              </p>
+              <Link href="/lessons/createLesson" className="button">
+                Start lesson
+              </Link>
+            </div>
+          )}
         </div>
       </main>
     </main>
